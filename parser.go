@@ -15,13 +15,13 @@ type Parser interface {
 // WithParseMultipartForm implements the Parser interface
 // filter function runs when saving the file
 type WithParseMultipartForm struct {
-	filter func(data *multipart.File) bool
+	Filter func(data *multipart.File) bool
 }
 
 // WithMultipartReader implements the Parser interface
 // filter function runs when parsing the file
 type WithMultipartReader struct {
-	filter func(data *multipart.Part) bool
+	Filter func(data *multipart.Part) bool
 }
 
 // Parse @ parses with request.ParseMultiparmForm()
@@ -32,7 +32,7 @@ func (parser WithParseMultipartForm) Parse(r *http.Request) (Saver, error) {
 	}
 	var files MultipartForm
 	files.files = *r.MultipartForm
-	files.filter = parser.filter
+	files.filter = parser.Filter
 	return files, nil
 }
 
@@ -50,7 +50,7 @@ func (parser WithMultipartReader) Parse(r *http.Request) (Saver, error) {
 		fileName := part.FileName()
 
 		// execute filter function
-		ok := parser.filter(part)
+		ok := parser.Filter(part)
 		if !ok {
 			continue
 		}
