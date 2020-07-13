@@ -4,7 +4,6 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
-	"path/filepath"
 )
 
 // Saver is a interface for determine which data type to store
@@ -61,7 +60,6 @@ func (s MultipartForm) Save(path string) error {
 func (s MultipartParts) Save(path string) error {
 	for _, header := range s.files {
 		f := header.Open()
-		path, _ := filepath.Abs("./test")
 		out, err := os.Create(path + header.Filename)
 		defer out.Close()
 		if err != nil {
