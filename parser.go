@@ -49,10 +49,12 @@ func (parser WithMultipartReader) Parse(r *http.Request) (Saver, error) {
 		}
 		fileName := part.FileName()
 
-		// execute filter function
-		ok := parser.Filter(part)
-		if !ok {
-			continue
+		if parser.Filter != nil {
+			// execute filter function
+			ok := parser.Filter(part)
+			if !ok {
+				continue
+			}
 		}
 
 		var b bytes.Buffer
