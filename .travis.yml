@@ -1,0 +1,11 @@
+sudo: false
+language: go
+go:
+  - 1.14.2
+before_install:
+  - go get github.com/modocache/gover
+  - go get github.com/mattn/goveralls
+script:
+  - go test -v -coverprofile=coverage.coverprofile -covermode=atomic
+  - gover
+  - goveralls -coverprofile gover.coverprofile -service travis-ci
