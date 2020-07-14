@@ -13,6 +13,10 @@ type Process struct {
 }
 
 // Store calls a function from Saver interface to save files
-func (p *Process) Store() {
-	p.saver.Save(p.storage.path)
+func (p *Process) Store() error {
+	err := p.saver.Save(p.storage.path)
+	if err != nil {
+		return err
+	}
+	return nil
 }
