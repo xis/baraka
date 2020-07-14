@@ -36,10 +36,14 @@ func (s MultipartForm) Save(path string) error {
 				return err
 			}
 			// execute filter function
-			okay := s.filter(&file)
-			if !okay {
-				continue
+
+			if s.filter != nil {
+				okay := s.filter(&file)
+				if !okay {
+					continue
+				}
 			}
+
 			out, err := os.Create(path + multipart.Filename)
 			defer out.Close()
 			if err != nil {
