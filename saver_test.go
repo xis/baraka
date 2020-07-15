@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"io"
 	"mime/multipart"
+	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"testing"
 )
 
@@ -26,15 +28,27 @@ func TestSave_MultipartForm(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
 	form := MultipartForm{
 		files: *createdForm,
 		filter: func(data *multipart.File) bool {
 			return true
 		},
 	}
-
 	err = form.Save(path)
 	if err != nil && err != io.EOF {
+		t.Error(err)
+	}
+
+	path = ""
+	for _, form := range form.files.File {
+		for _, file := range form {
+			file.Filename = ""
+		}
+	}
+	err = form.Save(path)
+
+	if err != nil && err.(*os.PathError).Err != syscall.ENOENT {
 		t.Error(err)
 	}
 }
@@ -65,6 +79,12 @@ func TestSave_MultipartParts(t *testing.T) {
 	}
 	err := mp.Save(path)
 	if err != nil {
+		t.Error(err)
+	}
+
+	mp.files[0].Filename = ""
+	err = mp.Save("")
+	if err != nil && err.(*os.PathError).Err != syscall.ENOENT {
 		t.Error(err)
 	}
 }
