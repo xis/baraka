@@ -1,2 +1,94 @@
-# baraka
-a tool for handling multipart files
+
+<div align="center">
+  <h1>baraka</h1>
+  
+  [![Go Report Card](https://goreportcard.com/badge/github.com/xis/baraka)](https://goreportcard.com/report/github.com/xis/baraka) [![codecov](https://codecov.io/gh/xis/baraka/branch/master/graph/badge.svg)](https://codecov.io/gh/xis/baraka) [![Build Status](https://travis-ci.org/xis/baraka.svg?branch=master)](https://travis-ci.org/xis/baraka) [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/xis/baraka)
+  
+a tool for handling file uploads for http servers
+
+baraka makes easier to saving multipart files from http request and filtering them.
+</div>
+
+# **using**
+```go
+func main() {
+	// create a storage
+	storage, err := baraka.NewStorage("./pics/", baraka.WithMultipartReader{})
+	if err != nil {
+		fmt.Println(err)
+	}
+	router := gin.Default()
+	router.POST("/upload", func(c *gin.Context) {
+		// parsing
+		p, err := storage.Parse(c.Request)
+		if err != nil {
+			fmt.Println(err)
+		}
+		// saving
+		p.Store()
+	})
+	router.Run()
+}
+```
+you can use with other http server libraries, just pass the http.Request to storage.Parse function.
+
+# **filter function**
+filter function is a custom function that filters the files that comes from requests. you can read file bytes and identify the file, return true if you wanna pass the file, return false if you dont. 
+
+**NOTE: if you have filters use WithMultipartReader as Parser, this will make more memory friendly than WithParseMultipartForm. invalid files won't get into memory with this method.**
+
+## **WithMultipartReader**
+```go
+// create a storage
+func main() {
+	storage, err := baraka.NewStorage("./pics/", baraka.WithMultipartReader{
+		// passing filter function
+		Filter: func(file *multipart.Part) bool {
+			// create a byte array
+			b := make([]byte, 512)
+			// get the file bytes to created byte array
+			file.Read(b)
+			// detect the content type
+			fileType := http.DetectContentType(b)
+			// if it is jpeg then pass the file
+			if fileType == "image/jpeg" {
+				return true
+			}
+			// if not then don't pass
+			return false
+		},
+	})
+	...codes above...
+```
+
+## **WithParseMultipartForm**
+
+```go 
+func main() {
+	storage, err := baraka.NewStorage("./pics/", baraka.WithParseMultipartForm{
+		// passing filter function
+		Filter: func(filemultipart.File) bool {
+			// create a byte array
+			b := make([]byte, 512)
+			// get the file bytes to created byte array
+			file.Read(b)
+			// detect the content type
+			fileType := http.DetectContentType(b)
+			// if it is jpeg then pass the file
+			if fileType == "image/jpeg" {
+				return true
+			}
+			// if not then don't pass
+			return false
+		},
+	})
+	...codes above...
+```
+
+# contributing
+ pull requests are welcome. please open an issue first to discuss what you would like to change.
+
+ please make sure to update tests as appropriate.
+
+# license
+[MIT](https://choosealicense.com/licenses/mit/)
