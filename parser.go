@@ -38,14 +38,20 @@ func (parser WithParseMultipartForm) Parse(r *http.Request) (Saver, error) {
 
 // Parse @ parses with multipart.Reader()
 func (parser WithMultipartReader) Parse(r *http.Request) (Saver, error) {
-	reader, _ := r.MultipartReader()
+	reader, err := r.MultipartReader()
+	if err != nil {
+		return nil, err
+	}
 	var mp MultipartParts
 	var maxMemory int64 = 32 << 20
 	// Reserve an additional 10 MB for non-file parts.
 	for {
 		part, err := reader.NextPart()
-		if err != nil {
-			break
+		if err != nil || err == io.EOF {
+			if err == io.EOF {
+				break
+			}
+			return nil, err
 		}
 		fileName := part.FileName()
 
