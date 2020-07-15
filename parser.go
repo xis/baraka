@@ -15,7 +15,7 @@ type Parser interface {
 // WithParseMultipartForm implements the Parser interface
 // filter function runs when saving the file
 type WithParseMultipartForm struct {
-	Filter func(data *multipart.File) bool
+	Filter func(data multipart.File) bool
 }
 
 // WithMultipartReader implements the Parser interface

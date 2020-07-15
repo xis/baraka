@@ -16,7 +16,7 @@ type Saver interface {
 type MultipartForm struct {
 	files multipart.Form
 	// MultipartForm filter function runs when saving file
-	filter func(data *multipart.File) bool
+	filter func(data multipart.File) bool
 }
 
 // MultipartParts implements the Saver interface
@@ -38,7 +38,7 @@ func (s MultipartForm) Save(path string) error {
 			// execute filter function
 
 			if s.filter != nil {
-				okay := s.filter(&file)
+				okay := s.filter(file)
 				if !okay {
 					continue
 				}

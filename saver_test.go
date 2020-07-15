@@ -31,7 +31,7 @@ func TestSave_MultipartForm(t *testing.T) {
 
 	form := MultipartForm{
 		files: *createdForm,
-		filter: func(data *multipart.File) bool {
+		filter: func(data multipart.File) bool {
 			return true
 		},
 	}
