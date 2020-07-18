@@ -34,10 +34,12 @@ func (s *Storage) Parse(r *http.Request) (*Process, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	p := &Process{
-		req:     r,
-		storage: s,
-		saver:   saver,
+		req:       r,
+		storage:   s,
+		saver:     saver,
+		marshaler: nil,
 	}
 	return p, nil
 }
