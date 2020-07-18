@@ -26,7 +26,7 @@ func TestSave_MultipartForm(t *testing.T) {
 	}
 
 	path := "./"
-	err = form.Save("./")
+	err = form.Save(path)
 	if err != nil && err != io.EOF {
 		t.Error(err)
 	}
