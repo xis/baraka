@@ -2,7 +2,10 @@
 <div align="center">
   <h1>baraka</h1>
   
-  [![Go Report Card](https://goreportcard.com/badge/github.com/xis/baraka)](https://goreportcard.com/report/github.com/xis/baraka) [![codecov](https://codecov.io/gh/xis/baraka/branch/master/graph/badge.svg)](https://codecov.io/gh/xis/baraka) [![Build Status](https://travis-ci.org/xis/baraka.svg?branch=master)](https://travis-ci.org/xis/baraka) [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/xis/baraka)
+[![Go Report Card](https://goreportcard.com/badge/github.com/xis/baraka)](https://goreportcard.com/report/github.com/xis/baraka)
+[![codecov](https://codecov.io/gh/xis/baraka/branch/master/graph/badge.svg)](https://codecov.io/gh/xis/baraka)
+[![Build Status](https://travis-ci.org/xis/baraka.svg?branch=master)](https://travis-ci.org/xis/baraka) 
+[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/xis/baraka)
   
 a tool for handling file uploads for http servers
 
