@@ -70,7 +70,7 @@ func main() {
 func main() {
 	storage, err := baraka.NewStorage("./pics/", baraka.WithParseMultipartForm{
 		// passing filter function
-		Filter: func(filemultipart.File) bool {
+		Filter: func(file multipart.File) bool {
 			// create a byte array
 			b := make([]byte, 512)
 			// get the file bytes to created byte array
