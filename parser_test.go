@@ -8,9 +8,8 @@ func TestParserParse(t *testing.T) {
 	raw := RawMultipartPlainText
 
 	parsers := []Parser{
-		WithMultipartReader{},
-		WithParseMultipartForm{},
-		WithMultipartReader{
+		Options{},
+		Options{
 			Filter: FilterJPEG(),
 		},
 	}

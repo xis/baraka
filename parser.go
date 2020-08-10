@@ -12,37 +12,19 @@ type Parser interface {
 	Parse(r *http.Request) (Saver, error)
 }
 
-// WithParseMultipartForm implements the Parser interface
-// filter function runs when saving the file
-type WithParseMultipartForm struct {
-	Filter func(data multipart.File) bool
-}
-
-// WithMultipartReader implements the Parser interface
+// Options implements the Parser interface
 // filter function runs when parsing the file
-type WithMultipartReader struct {
+type Options struct {
 	Filter func(data *multipart.Part) bool
 }
 
-// Parse @ parses with request.ParseMultiparmForm()
-func (parser WithParseMultipartForm) Parse(r *http.Request) (Saver, error) {
-	err := r.ParseMultipartForm(32 << 20)
-	if err != nil {
-		return nil, err
-	}
-	var files MultipartForm
-	files.files = *r.MultipartForm
-	files.filter = parser.Filter
-	return files, nil
-}
-
 // Parse @ parses with multipart.Reader()
-func (parser WithMultipartReader) Parse(r *http.Request) (Saver, error) {
+func (options Options) Parse(r *http.Request) (Saver, error) {
 	reader, err := r.MultipartReader()
 	if err != nil {
 		return nil, err
 	}
-	var mp MultipartParts
+	var parts Parts
 	var maxMemory int64 = 32 << 20
 	// Reserve an additional 10 MB for non-file parts.
 	for {
@@ -55,9 +37,9 @@ func (parser WithMultipartReader) Parse(r *http.Request) (Saver, error) {
 		}
 		fileName := part.FileName()
 
-		if parser.Filter != nil {
+		if options.Filter != nil {
 			// execute filter function
-			ok := parser.Filter(part)
+			ok := options.Filter(part)
 			if !ok {
 				continue
 			}
@@ -74,7 +56,8 @@ func (parser WithMultipartReader) Parse(r *http.Request) (Saver, error) {
 		}
 		fh.content = b.Bytes()
 		fh.Size = int64(len(fh.content))
-		mp.files = append(mp.files, fh)
+		parts.files = append(parts.files, fh)
+		parts.len++
 	}
-	return mp, nil
+	return &parts, nil
 }
