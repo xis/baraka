@@ -20,7 +20,12 @@ const RawMultipartPlainText = `
 Content-Disposition: form-data; name="filea"; filename="filea.txt"
 Content-Type: text/plain
 
-test file
+test file a
+--MyBoundary
+Content-Disposition: form-data; name="fileb"; filename="fileb.txt"
+Content-Type: text/plain
+
+test file b
 --MyBoundary--
 `
 
@@ -47,17 +52,6 @@ func CreateRequest(raw string) *http.Request {
 
 func FilterJPEG() func(*multipart.Part) bool {
 	return func(data *multipart.Part) bool {
-		buf := make([]byte, 512)
-		data.Read(buf)
-		media := http.DetectContentType(buf)
-		if media == "image/jpeg" {
-			return true
-		}
-		return false
-	}
-}
-func FilterFormJPEG() func(multipart.File) bool {
-	return func(data multipart.File) bool {
 		buf := make([]byte, 512)
 		data.Read(buf)
 		media := http.DetectContentType(buf)
