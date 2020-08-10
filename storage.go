@@ -2,10 +2,9 @@ package baraka
 
 import (
 	"net/http"
-	"path/filepath"
 )
 
-// Storage is a struct that determines which path to size and which parsing method to parse.
+// Storage is a struct that determines which path to save and which parsing method to parse.
 // Create this struct with NewStorage function.
 type Storage struct {
 	path   string
@@ -14,12 +13,8 @@ type Storage struct {
 
 // NewStorage creates a new Storage struct.
 func NewStorage(path string, parser Parser) (*Storage, error) {
-	absolutePath, err := filepath.Abs(path)
-	if err != nil {
-		return nil, err
-	}
 	storage := &Storage{
-		path:   absolutePath,
+		path:   path,
 		parser: parser,
 	}
 	return storage, nil
@@ -34,12 +29,10 @@ func (s *Storage) Parse(r *http.Request) (*Process, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	p := &Process{
-		req:       r,
-		storage:   s,
-		saver:     saver,
-		marshaler: nil,
+		req:     r,
+		storage: s,
+		saver:   saver,
 	}
 	return p, nil
 }

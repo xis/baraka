@@ -6,7 +6,7 @@ import (
 )
 
 func TestNewStorage(t *testing.T) {
-	s, err := NewStorage("./", WithMultipartReader{})
+	s, err := NewStorage("./", Options{})
 	if err != nil {
 		t.Error(err)
 	}
@@ -16,7 +16,7 @@ func TestNewStorage(t *testing.T) {
 }
 
 func TestStorageParse(t *testing.T) {
-	s, err := NewStorage("./", WithMultipartReader{
+	s, err := NewStorage("./", Options{
 		Filter: func(data *multipart.Part) bool {
 			return true
 		},
@@ -30,7 +30,7 @@ func TestStorageParse(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	err = p.saver.Save(s.path)
+	err = p.saver.Save("test", s.path)
 	if err != nil {
 		t.Error(err)
 	}
