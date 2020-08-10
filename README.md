@@ -16,7 +16,7 @@ baraka makes easier to saving multipart files from http request and filtering th
 ```go
 func main() {
 	// create a storage
-	storage, err := baraka.NewStorage("./pics/", baraka.WithMultipartReader{})
+	storage, err := baraka.NewStorage("./pics/", baraka.Options{})
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -38,13 +38,12 @@ you can use with other http server libraries, just pass the http.Request to stor
 # **filter function**
 filter function is a custom function that filters the files that comes from requests. you can read file bytes and identify the file, return true if you wanna pass the file, return false if you dont. 
 
-**NOTE: if you have filters use WithMultipartReader as Parser, this will make more memory friendly than WithParseMultipartForm. invalid files won't get into memory with this method.**
 
-## **WithMultipartReader**
+## filter example
 ```go
 // create a storage
 func main() {
-	storage, err := baraka.NewStorage("./pics/", baraka.WithMultipartReader{
+	storage, err := baraka.NewStorage("./pics/", baraka.Options{
 		// passing filter function
 		Filter: func(file *multipart.Part) bool {
 			// create a byte array
@@ -61,31 +60,41 @@ func main() {
 			return false
 		},
 	})
-	...codes above...
+	...codes below...
+```
+# getting information
+```go
+... codes above ...
+	p, err := storage.Parse(c.Request)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// prints filenames
+	fmt.Println(p.Filenames())
+	// prints total files count
+	fmt.Println(p.Length())
+	// prints content types of files
+	fmt.Println(p.ContentTypes())
+... codes below ...
 ```
 
-## **WithParseMultipartForm**
-
-```go 
-func main() {
-	storage, err := baraka.NewStorage("./pics/", baraka.WithParseMultipartForm{
-		// passing filter function
-		Filter: func(file multipart.File) bool {
-			// create a byte array
-			b := make([]byte, 512)
-			// get the file bytes to created byte array
-			file.Read(b)
-			// detect the content type
-			fileType := http.DetectContentType(b)
-			// if it is jpeg then pass the file
-			if fileType == "image/jpeg" {
-				return true
-			}
-			// if not then don't pass
-			return false
-		},
-	})
-	...codes above...
+# getting json data
+ ```go
+... codes above ...
+	p, err := storage.Parse(c.Request)
+	if err != nil {
+		fmt.Println(err)
+	}
+	b, err := p.JSON()
+	if err != nil {
+		fmt.Println(err)
+	}
+	var foo Foo
+	err := json.Unmarshal(b, foo)
+	if err != nil {
+		return err
+	}
+... codes below ...
 ```
 
 # contributing
