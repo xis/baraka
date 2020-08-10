@@ -28,7 +28,7 @@ func main() {
 			fmt.Println(err)
 		}
 		// saving
-		p.Store()
+		p.Store("file_prefix")
 	})
 	router.Run()
 }
