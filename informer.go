@@ -7,10 +7,12 @@ type Informer interface {
 	ContentTypes() []string
 }
 
+// Length returns total count of files
 func (parts *Parts) Length() int {
 	return parts.len
 }
 
+// Filenames returns names of files
 func (parts *Parts) Filenames() []string {
 	filenames := make([]string, parts.len)
 	for k, v := range parts.files {
@@ -19,6 +21,7 @@ func (parts *Parts) Filenames() []string {
 	return filenames
 }
 
+// ContentTypes returns content types of files
 func (parts *Parts) ContentTypes() []string {
 	contentTypes := make([]string, parts.len)
 	for k, v := range parts.files {

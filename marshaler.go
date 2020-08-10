@@ -9,7 +9,7 @@ type Marshaler interface {
 	JSON() ([][]byte, error)
 }
 
-// JSON @
+// JSON returns bytes of json files separately
 func (parts *Parts) JSON() ([][]byte, error) {
 	jsons := [][]byte{}
 	for _, file := range parts.files {
