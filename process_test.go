@@ -16,10 +16,8 @@ func TestJSON(t *testing.T) {
 
 func TestStore(t *testing.T) {
 	tests := []HeaderTest{
-		{http.Header{"Content-Type": {`multipart/form-data; boundary="MyBoundary"`}}, WithMultipartReader{}},
-		{http.Header{"Content-Type": {`text/plain`}}, WithMultipartReader{}},
-		{http.Header{"Content-Type": {`multipart/form-data; boundary="MyBoundary"`}}, WithParseMultipartForm{}},
-		{http.Header{"Content-Type": {`text/plain`}}, WithParseMultipartForm{}},
+		{http.Header{"Content-Type": {`multipart/form-data; boundary="MyBoundary"`}}, Options{}},
+		{http.Header{"Content-Type": {`text/plain`}}, Options{}},
 	}
 	for _, test := range tests {
 		s, err := NewStorage("./", test.parser)
@@ -38,7 +36,7 @@ func TestStore(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		err = p.Store()
+		err = p.Store("test")
 		if err != nil {
 			t.Fatal(err)
 		}
