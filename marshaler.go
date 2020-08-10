@@ -10,39 +10,9 @@ type Marshaler interface {
 }
 
 // JSON @
-func (m MultipartForm) JSON() ([][]byte, error) {
+func (parts *Parts) JSON() ([][]byte, error) {
 	jsons := [][]byte{}
-	for _, multiparts := range m.files.File {
-		for _, file := range multiparts {
-			if file.Size == 0 {
-				continue
-			}
-			media, _, err := mime.ParseMediaType(file.Header.Get("Content-Type"))
-			if err != nil {
-				return nil, err
-			}
-			if media == "application/json" {
-				f, err := file.Open()
-				defer f.Close()
-				if err != nil {
-					return nil, err
-				}
-				b := make([]byte, file.Size)
-				_, err = f.Read(b)
-				if err != nil {
-					return nil, err
-				}
-				jsons = append(jsons, b)
-			}
-		}
-	}
-	return jsons, nil
-}
-
-// JSON @
-func (m MultipartParts) JSON() ([][]byte, error) {
-	jsons := [][]byte{}
-	for _, file := range m.files {
+	for _, file := range parts.files {
 		if file.Size == 0 {
 			continue
 		}

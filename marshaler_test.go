@@ -7,8 +7,7 @@ import (
 
 func TestMarshalerJSON(t *testing.T) {
 	parsers := []Parser{
-		WithMultipartReader{},
-		WithParseMultipartForm{},
+		Options{},
 	}
 	tests := []JSONTest{
 		{`{"data": 42}`, 1, "application/json"},
