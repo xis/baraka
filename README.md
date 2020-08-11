@@ -24,6 +24,8 @@ func main() {
 	router.POST("/upload", func(c *gin.Context) {
 		// parsing
 		p, err := storage.Parse(c.Request)
+		// or you can use ParseButMax if you need limited size 
+		p, err := storage.ParseButMax(32<<20, 5, c.Request)
 		if err != nil {
 			fmt.Println(err)
 		}
