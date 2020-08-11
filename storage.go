@@ -11,6 +11,9 @@ type Storage struct {
 	parser Parser
 }
 
+// defaultMaxMemory 10 mb per file
+const defaultMaxMemory = 10 << 20
+
 // NewStorage creates a new Storage struct.
 func NewStorage(path string, parser Parser) (*Storage, error) {
 	storage := &Storage{
@@ -20,12 +23,21 @@ func NewStorage(path string, parser Parser) (*Storage, error) {
 	return storage, nil
 }
 
-// Parse is a function for parsing multipart form files.
-// calls Parse from Parser interface and gets Saver,
-// creates new process and attaches Saver, *Storage and *http.Request.
-// returns *Process for user.
+// Parse same with ParseButMax but uses defaultMaxMemory 10MB, and unlimited file count.
 func (s *Storage) Parse(r *http.Request) (*Process, error) {
-	saver, err := s.parser.Parse(r)
+	p, err := s.ParseButMax(defaultMaxMemory, 0, r)
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
+// ParseButMax is a function for parsing multipart form files.
+// calls Parse from Parser interface and gets Saver,
+// creates new process and attaches Saver, *Storage and *http.Request to it.
+// returns *Process for user.
+func (s *Storage) ParseButMax(maxFileSize int64, maxFileCount int64, r *http.Request) (*Process, error) {
+	saver, err := s.parser.Parse(maxFileSize, maxFileCount, r)
 	if err != nil {
 		return nil, err
 	}

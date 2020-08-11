@@ -9,7 +9,7 @@ import (
 
 // Parser is an interface which determine which method to use when parsing multipart files
 type Parser interface {
-	Parse(r *http.Request) (Saver, error)
+	Parse(maxFileSize int64, maxFileCount int64, r *http.Request) (Saver, error)
 }
 
 // Options implements the Parser interface
@@ -19,14 +19,15 @@ type Options struct {
 }
 
 // Parse @ parses with multipart.Reader()
-func (options Options) Parse(r *http.Request) (Saver, error) {
+func (options Options) Parse(maxFileSize int64, maxFileCount int64, r *http.Request) (Saver, error) {
 	reader, err := r.MultipartReader()
 	if err != nil {
 		return nil, err
 	}
+
+	// reserve an additional 2 MB for non-file parts.
+	maxFileSize += int64(2 << 20)
 	var parts Parts
-	var maxMemory int64 = 32 << 20
-	// Reserve an additional 10 MB for non-file parts.
 	for {
 		part, err := reader.NextPart()
 		if err != nil || err == io.EOF {
@@ -36,7 +37,6 @@ func (options Options) Parse(r *http.Request) (Saver, error) {
 			return nil, err
 		}
 		fileName := part.FileName()
-
 		if options.Filter != nil {
 			// execute filter function
 			ok := options.Filter(part)
@@ -50,14 +50,20 @@ func (options Options) Parse(r *http.Request) (Saver, error) {
 			Filename: fileName,
 			Header:   part.Header,
 		}
-		_, err = io.CopyN(&b, part, maxMemory+1)
+		n, err := io.CopyN(&b, part, maxFileSize+1)
 		if err != nil && err != io.EOF {
 			return nil, err
+		}
+		if n > maxFileSize {
+			continue
 		}
 		fh.content = b.Bytes()
 		fh.Size = int64(len(fh.content))
 		parts.files = append(parts.files, fh)
 		parts.len++
+		if len := int64(parts.len); len == maxFileCount && len != 0 {
+			break
+		}
 	}
 	return &parts, nil
 }
