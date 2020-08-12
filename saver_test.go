@@ -26,4 +26,8 @@ func TestSave_MultipartParts(t *testing.T) {
 	if err != nil && err.(*os.PathError).Err != syscall.ENOENT {
 		t.Error(err)
 	}
+	err = mp.Save("test", "./", "text/plain")
+	if err != nil {
+		t.Error(err)
+	}
 }
