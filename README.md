@@ -6,11 +6,18 @@
 [![codecov](https://codecov.io/gh/xis/baraka/branch/master/graph/badge.svg)](https://codecov.io/gh/xis/baraka)
 [![Build Status](https://travis-ci.org/xis/baraka.svg?branch=master)](https://travis-ci.org/xis/baraka) 
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/xis/baraka)
+[![codecov](https://codecov.io/gh/xis/baraka/branch/master/graph/badge.svg)](https://codecov.io/gh/xis/baraka)
   
 a tool for handling file uploads for http servers
 
-baraka makes easier to saving multipart files from http request and filtering them.
+makes it easier to save multipart files from http request and to filter them,
+prevents unwanted files from getting into memory, extracts json data with files.
 </div>
+
+# **install**
+```bash
+go get -u github.com/xis/baraka
+```
 
 # **using**
 ```go
@@ -98,6 +105,8 @@ func main() {
 	}
 ... codes below ...
 ```
+# more 
+[Handling file uploads simple and memory friendly in Go with Baraka](https://pkg.go.dev/github.com/xis/baraka)
 
 # contributing
  pull requests are welcome. please open an issue first to discuss what you would like to change.
