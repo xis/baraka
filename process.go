@@ -15,7 +15,7 @@ type Process struct {
 // Store same with StoreWithout but uses default exclude parameter
 // excludes json files by default from saving into disk
 func (p *Process) Store(prefix string) error {
-	err := p.StoreWithout(prefix, "applicaton/json")
+	err := p.StoreWithout(prefix, "application/json")
 	if err != nil {
 		return err
 	}
