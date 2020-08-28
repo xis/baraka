@@ -105,7 +105,7 @@ func main() {
 ... codes below ...
 ```
 # more 
-[Handling file uploads simple and memory friendly in Go with Baraka](https://pkg.go.dev/github.com/xis/baraka)
+[Handling file uploads simple and memory friendly in Go with Baraka](https://dev.to/xis/handling-file-uploads-simple-and-memory-friendly-in-go-with-baraka-2h3)
 
 # contributing
  pull requests are welcome. please open an issue first to discuss what you would like to change.
