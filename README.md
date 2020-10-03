@@ -18,7 +18,7 @@ prevents unwanted files from getting into memory, extracts json data with files.
 go get -u github.com/xis/baraka
 ```
 
-# **using**
+# **usage**
 ```go
 func main() {
 	// create a storage
