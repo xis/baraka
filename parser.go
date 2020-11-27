@@ -24,7 +24,6 @@ func (options Options) Parse(maxFileSize int64, maxFileCount int64, r *http.Requ
 	if err != nil {
 		return nil, err
 	}
-
 	// reserve an additional 2 MB for non-file parts.
 	maxFileSize += int64(2 << 20)
 	var parts Parts
@@ -36,7 +35,7 @@ func (options Options) Parse(maxFileSize int64, maxFileCount int64, r *http.Requ
 			}
 			return nil, err
 		}
-		fileName := part.FileName()
+
 		if options.Filter != nil {
 			// execute filter function
 			ok := options.Filter(part)
@@ -45,6 +44,7 @@ func (options Options) Parse(maxFileSize int64, maxFileCount int64, r *http.Requ
 			}
 		}
 
+		fileName := part.FileName()
 		var b bytes.Buffer
 		fh := &Header{
 			Filename: fileName,
