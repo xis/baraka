@@ -15,21 +15,17 @@ type Process struct {
 // Store same with StoreWithout but uses default exclude parameter
 // excludes json files by default from saving into disk
 func (p *Process) Store(prefix string) error {
-	err := p.StoreWithout(prefix, "application/json")
-	if err != nil {
-		return err
-	}
-	return nil
+	return p.StoreWithout(prefix, "application/json")
 }
 
 // StoreWithout calls a function from Saver interface to save files
 // you can give a variadic parameter for exclude content types
 func (p *Process) StoreWithout(prefix string, excludedContentTypes ...string) error {
-	err := p.saver.Save(prefix, p.storage.path, excludedContentTypes...)
-	if err != nil {
-		return err
-	}
-	return nil
+	return p.saver.Save(prefix, p.storage.path, excludedContentTypes...)
+}
+
+func (p *Process) GetBytes(excludedContentTypes ...string) ([][]byte, error) {
+	return p.saver.SaveToBytes(excludedContentTypes...)
 }
 
 // JSON returns bytes of json files separately
