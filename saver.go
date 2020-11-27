@@ -1,6 +1,7 @@
 package baraka
 
 import (
+	"bytes"
 	"io"
 	"os"
 	"path/filepath"
@@ -12,6 +13,7 @@ import (
 // Parse interface functions returns this interface
 type Saver interface {
 	Save(prefix string, path string, excludedContentTypes ...string) error
+	SaveToBytes(excludedContentTypes ...string) ([][]byte, error)
 }
 
 // Parts implements the Saver interface
@@ -24,27 +26,44 @@ type Parts struct {
 // this method saves Parts data.
 func (s *Parts) Save(prefix string, path string, excludedContentTypes ...string) error {
 	for key := range s.files {
-
 		fileHeader := s.files[key]
 		if len(excludedContentTypes) != 0 {
-			ok := isExcluded(fileHeader.Header.Get("Content-Type"), excludedContentTypes...)
-			if !ok {
+			excluded := isExcluded(fileHeader.Header.Get("Content-Type"), excludedContentTypes...)
+			if excluded {
 				continue
 			}
 		}
 		extension := filepath.Ext(fileHeader.Filename)
-		f := fileHeader.Open()
+		file := fileHeader.Open()
 		out, err := os.Create(path + prefix + strconv.Itoa(key) + extension)
 		defer out.Close()
 		if err != nil {
 			return err
 		}
-		_, err = io.Copy(out, f)
+		_, err = io.Copy(out, file)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (s *Parts) SaveToBytes(excludedContentTypes ...string) ([][]byte, error) {
+	files := make([][]byte, len(s.files))
+	for key := range s.files {
+		fileHeader := s.files[key]
+		if len(excludedContentTypes) != 0 {
+			excluded := isExcluded(fileHeader.Header.Get("Content-Type"), excludedContentTypes...)
+			if excluded {
+				continue
+			}
+		}
+		reader := fileHeader.Open()
+		file := new(bytes.Buffer)
+		file.ReadFrom(reader)
+		files[key] = file.Bytes()
+	}
+	return files, nil
 }
 
 // helper functions for saver
@@ -58,8 +77,8 @@ func isExcluded(contentType string, excludedContentTypes ...string) bool {
 		}
 		contentType = strings.TrimSpace(strings.ToLower(contentType[0:i]))
 		if contentType == excludedContentTypes[key] {
-			return false
+			return true
 		}
 	}
-	return true
+	return false
 }
