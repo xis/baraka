@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestSave_MultipartParts(t *testing.T) {
+func TestSaver_Parts(t *testing.T) {
 	s, err := NewStorage("./", Options{})
 	if err != nil {
 		t.Error(err)
@@ -18,6 +18,16 @@ func TestSave_MultipartParts(t *testing.T) {
 	}
 	mp := p.saver.(*Parts)
 	err = mp.Save("test", "./")
+	if err != nil {
+		t.Error(err)
+	}
+	files, err := mp.SaveToBytes()
+	if err != nil {
+		t.Error(err)
+	}
+	if string(files[0]) != "test file a" && string(files[1]) != "test files b" {
+		t.Error("files not read properly")
+	}
 	if err != nil {
 		t.Error(err)
 	}
