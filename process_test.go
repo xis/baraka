@@ -40,6 +40,13 @@ func TestStore(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		files, err := p.GetBytes()
+		if err != nil {
+			t.Error(err)
+		}
+		if string(files[0]) != "test file a" && string(files[1]) != "test files b" {
+			t.Error("files not read properly")
+		}
 	}
 
 }
