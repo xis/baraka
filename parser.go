@@ -7,26 +7,48 @@ import (
 	"net/http"
 )
 
+// defaultMaxFileSize 10 mb per file
+const defaultMaxFileSize = 10 << 20
+
 // Parser is an interface which determine which method to use when parsing multipart files
 type Parser interface {
-	Parse(maxFileSize int64, maxFileCount int64, r *http.Request) (Saver, error)
+	Parse(r *http.Request) (Processor, error)
+}
+
+type parser struct {
+	Options ParserOptions
 }
 
 // Options implements the Parser interface
 // filter function runs when parsing the file
-type Options struct {
-	Filter func(data *multipart.Part) bool
+type ParserOptions struct {
+	MaxFileSize  int
+	MaxFileCount int
+	Filter       func(data *multipart.Part) bool
+}
+
+func NewParser(options ParserOptions) Parser {
+	if options.MaxFileSize == 0 {
+		options.MaxFileSize = defaultMaxFileSize
+	}
+	return parser{
+		options,
+	}
 }
 
 // Parse @ parses with multipart.Reader()
-func (options Options) Parse(maxFileSize int64, maxFileCount int64, r *http.Request) (Saver, error) {
+func (parser parser) Parse(r *http.Request) (Processor, error) {
 	reader, err := r.MultipartReader()
 	if err != nil {
 		return nil, err
 	}
+
+	maxFileSize := parser.Options.MaxFileSize
 	// reserve an additional 2 MB for non-file parts.
-	maxFileSize += int64(2 << 20)
-	var parts Parts
+	maxFileSize += 2 << 20
+
+	parts := make([]*Part, 0, parser.Options.MaxFileCount)
+	request := NewRequest(parts...)
 	for {
 		part, err := reader.NextPart()
 		if err != nil || err == io.EOF {
@@ -36,34 +58,26 @@ func (options Options) Parse(maxFileSize int64, maxFileCount int64, r *http.Requ
 			return nil, err
 		}
 
-		if options.Filter != nil {
+		if parser.Options.Filter != nil {
 			// execute filter function
-			ok := options.Filter(part)
+			ok := parser.Options.Filter(part)
 			if !ok {
 				continue
 			}
 		}
-
-		fileName := part.FileName()
 		var b bytes.Buffer
-		fh := &Header{
-			Filename: fileName,
-			Header:   part.Header,
-		}
-		n, err := io.CopyN(&b, part, maxFileSize+1)
+		n, err := io.CopyN(&b, part, int64(maxFileSize+1))
 		if err != nil && err != io.EOF {
 			return nil, err
 		}
-		if n > maxFileSize {
+		if n > int64(maxFileSize) {
 			continue
 		}
-		fh.content = b.Bytes()
-		fh.Size = int64(len(fh.content))
-		parts.files = append(parts.files, fh)
-		parts.len++
-		if len := int64(parts.len); len == maxFileCount && len != 0 {
+		p := NewPart(part.FileName(), &part.Header, b.Len(), b.Bytes())
+		request.parts = append(request.parts, &p)
+		if len := len(request.parts); len == parser.Options.MaxFileCount && len != 0 {
 			break
 		}
 	}
-	return &parts, nil
+	return request, nil
 }
