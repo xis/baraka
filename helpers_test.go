@@ -9,12 +9,6 @@ import (
 	"strings"
 )
 
-type JSONTest struct {
-	raw         string
-	expected    int
-	contentType string
-}
-
 const RawMultipartPlainText = `
 --MyBoundary
 Content-Disposition: form-data; name="filea"; filename="filea.txt"
@@ -43,7 +37,7 @@ Content-Type: @contentType
 --MyBoundary--
 `
 
-func CreateRequest(raw string) *http.Request {
+func CreateHTTPRequest(raw string) *http.Request {
 	b := strings.NewReader(strings.ReplaceAll(raw, "\n", "\r\n"))
 	req, _ := http.NewRequest("POST", "http://localhost", b)
 	req.Header = http.Header{"Content-Type": {`multipart/form-data; boundary="MyBoundary"`}}
