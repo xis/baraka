@@ -4,29 +4,30 @@ import (
 	"testing"
 )
 
-type ParserTest struct {
-	parser         Parser
-	expectedLength int
-}
-
 func TestParserParse(t *testing.T) {
 	raw := RawMultipartPlainText
 
-	tests := []ParserTest{
-		{NewParser(ParserOptions{}), 2},
-		{NewParser(ParserOptions{
+	parsers := []Parser{
+		Options{},
+		Options{
 			Filter: FilterJPEG(),
-		}), 0},
+		},
 	}
-
-	for _, test := range tests {
-		req := CreateHTTPRequest(raw)
-		processor, err := test.parser.Parse(req)
+	for _, parser := range parsers {
+		s, err := NewStorage("./", parser)
 		if err != nil {
 			t.Error(err)
 		}
-		if len(processor.Content()) != test.expectedLength {
-			t.Error("content item length is not equal to expected length")
+		req := CreateRequest(raw)
+
+		_, err = s.Parse(req)
+		if err != nil {
+			t.Error(err)
+		}
+		req = CreateRequest(raw)
+		_, err = s.ParseButMax(32<<20, 1, req)
+		if err != nil {
+			t.Error(err)
 		}
 	}
 }

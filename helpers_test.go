@@ -4,9 +4,16 @@
 package baraka
 
 import (
+	"mime/multipart"
 	"net/http"
 	"strings"
 )
+
+type JSONTest struct {
+	raw         string
+	expected    int
+	contentType string
+}
 
 const RawMultipartPlainText = `
 --MyBoundary
@@ -36,16 +43,17 @@ Content-Type: @contentType
 --MyBoundary--
 `
 
-func CreateHTTPRequest(raw string) *http.Request {
+func CreateRequest(raw string) *http.Request {
 	b := strings.NewReader(strings.ReplaceAll(raw, "\n", "\r\n"))
 	req, _ := http.NewRequest("POST", "http://localhost", b)
 	req.Header = http.Header{"Content-Type": {`multipart/form-data; boundary="MyBoundary"`}}
 	return req
 }
 
-func FilterJPEG() func([]byte) bool {
-	return func(data []byte) bool {
-		buf := data[:512]
+func FilterJPEG() func(*multipart.Part) bool {
+	return func(data *multipart.Part) bool {
+		buf := make([]byte, 512)
+		data.Read(buf)
 		media := http.DetectContentType(buf)
 		if media == "image/jpeg" {
 			return true
