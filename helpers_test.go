@@ -4,7 +4,6 @@
 package baraka
 
 import (
-	"mime/multipart"
 	"net/http"
 	"strings"
 )
@@ -44,10 +43,9 @@ func CreateHTTPRequest(raw string) *http.Request {
 	return req
 }
 
-func FilterJPEG() func(*multipart.Part) bool {
-	return func(data *multipart.Part) bool {
-		buf := make([]byte, 512)
-		data.Read(buf)
+func FilterJPEG() func([]byte) bool {
+	return func(data []byte) bool {
+		buf := data[:512]
 		media := http.DetectContentType(buf)
 		if media == "image/jpeg" {
 			return true
