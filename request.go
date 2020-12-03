@@ -8,19 +8,21 @@ import (
 	"strings"
 )
 
-// Request implements the Saver interface
+// Request implements the Processor interface.
+// contains an array of parts.
+// parser.Parse() returns Request as Processor.
 type Request struct {
 	parts []*Part
 }
 
+// NewRequest creates a new Request with parts inside
 func NewRequest(parts ...*Part) *Request {
 	return &Request{
 		parts,
 	}
 }
 
-// Save is a method for saving multipart files.
-// this method saves Parts data.
+// Save is a method for saving parts into disk.
 func (s *Request) Save(prefix string, path string, excludedContentTypes ...string) error {
 	for key := range s.parts {
 		file := s.parts[key]
@@ -44,16 +46,17 @@ func (s *Request) Save(prefix string, path string, excludedContentTypes ...strin
 	return nil
 }
 
+// Content method gives you []*Part, so you can access all the data of the parts.
 func (s *Request) Content() []*Part {
 	return s.parts
 }
 
-// Length returns total count of files
+// Length returns length of the parts
 func (request *Request) Length() int {
 	return len(request.parts)
 }
 
-// Filenames returns names of files
+// Filenames returns filenames of the parts
 func (request *Request) Filenames() []string {
 	filenames := make([]string, len(request.parts))
 	for k, v := range request.parts {
@@ -62,7 +65,7 @@ func (request *Request) Filenames() []string {
 	return filenames
 }
 
-// ContentTypes returns content types of files
+// ContentTypes returns content types of the parts
 func (request *Request) ContentTypes() []string {
 	contentTypes := make([]string, len(request.parts))
 	for k, v := range request.parts {
@@ -71,7 +74,7 @@ func (request *Request) ContentTypes() []string {
 	return contentTypes
 }
 
-// JSON returns bytes of json files separately
+// GetJSON returns json strings of the application/json parts separately
 func (request *Request) GetJSON() ([]string, error) {
 	jsons := []string{}
 	for _, file := range request.parts {
