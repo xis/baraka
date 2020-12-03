@@ -1,3 +1,3 @@
-module github.com/xis/baraka/v2
+module github.com/xis/baraka
 
 go 1.14
