@@ -1,6 +1,6 @@
 package baraka
 
-// Informer is a interface which contains information functions about request
+// Informer is a interface that wraps information functions about parsed multipart request
 type Informer interface {
 	Content() []*Part
 	Length() int
