@@ -75,28 +75,28 @@ func main() {
 ```
 # getting information
 ```go
-	p, err := parser.Parse(c.Request)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// prints filenames
-	fmt.Println(p.Filenames())
-	// prints total files count
-	fmt.Println(p.Length())
-	// prints content types of files
-	fmt.Println(p.ContentTypes())
+p, err := parser.Parse(c.Request)
+if err != nil {
+	fmt.Println(err)
+}
+// prints filenames
+fmt.Println(p.Filenames())
+// prints total files count
+fmt.Println(p.Length())
+// prints content types of files
+fmt.Println(p.ContentTypes())
 ```
 
 # getting json data
  ```go
-	p, err := parser.Parse(c.Request)
-	if err != nil {
-		fmt.Println(err)
-	}
-	jsonStrings, err := p.GetJSON()
-	if err != nil {
-		fmt.Println(err)
-	}
+p, err := parser.Parse(c.Request)
+if err != nil {
+	fmt.Println(err)
+}
+jsonStrings, err := p.GetJSON()
+if err != nil {
+	fmt.Println(err)
+}
 ```
 # more 
 *v1.1.1*
