@@ -2,41 +2,64 @@ package baraka
 
 import (
 	"bytes"
+	"errors"
 	"io"
-	"mime/multipart"
 	"net/http"
 )
 
-// defaultMaxFileSize 10 mb per file
 const defaultMaxFileSize = 10 << 20
+const defaultMaxParseCount = 20
+const defaultMaxFileCount = 0
+const defaultMaxAvailableSlice = 2
+
+var errMaxFileCountExceeded = errors.New("max file count to save exceeded")
 
 // Parser is an interface which determine which method to use when parsing multipart files
 type Parser interface {
 	Parse(r *http.Request) (Processor, error)
 }
 
+// parser implements the Parser interface
 type parser struct {
 	Options ParserOptions
 }
 
-// Options implements the Parser interface
+// ParserOptions contains parser's options about parsing.
 // filter function runs when parsing the file
 type ParserOptions struct {
-	MaxFileSize  int
-	MaxFileCount int
-	Filter       func(data *multipart.Part) bool
+	MaxFileSize       int
+	MaxFileCount      int
+	MaxParseCount     int
+	MaxAvailableSlice int
+	Filter            func(b []byte) bool
 }
 
+// NewParser creates a new Parser, if you give an empty ParserOptions it uses defaults.
 func NewParser(options ParserOptions) Parser {
 	if options.MaxFileSize == 0 {
 		options.MaxFileSize = defaultMaxFileSize
+	}
+	if options.MaxParseCount == 0 {
+		options.MaxParseCount = defaultMaxParseCount
+	}
+	if options.MaxFileCount == 0 {
+		options.MaxFileCount = defaultMaxFileCount
+	}
+	if options.MaxAvailableSlice == 0 {
+		options.MaxAvailableSlice = defaultMaxAvailableSlice
 	}
 	return parser{
 		options,
 	}
 }
 
-// Parse @ parses with multipart.Reader()
+// Parse parses the http request with the multipart.Reader.
+// reads parts inside the loop which iterates up to MaxParseCount at most.
+// creates a []byte (buf) which gonna contain the part data.
+// Parse sometimes not creating buf if there is a available buf in availableSlices.
+// it gets a buf from availableSlices and use it.
+// availableSlices fed by filter function,
+// if part can't pass through the filter function, reserved buf for the part gets into availableSlices.
 func (parser parser) Parse(r *http.Request) (Processor, error) {
 	reader, err := r.MultipartReader()
 	if err != nil {
@@ -44,39 +67,49 @@ func (parser parser) Parse(r *http.Request) (Processor, error) {
 	}
 
 	maxFileSize := parser.Options.MaxFileSize
-	// reserve an additional 2 MB for non-file parts.
-	maxFileSize += 2 << 20
 
 	parts := make([]*Part, 0, parser.Options.MaxFileCount)
 	request := NewRequest(parts...)
-	for {
+
+	availableSlices := make([][]byte, 0, parser.Options.MaxAvailableSlice)
+	for parseCount := 0; parseCount < parser.Options.MaxParseCount; parseCount++ {
 		part, err := reader.NextPart()
-		if err != nil || err == io.EOF {
+		if err != nil {
 			if err == io.EOF {
 				break
 			}
 			return nil, err
 		}
 
+		var buf []byte
+		if len(availableSlices) > 0 {
+			buf, availableSlices = availableSlices[len(availableSlices)-1], availableSlices[:len(availableSlices)-1]
+		} else {
+			buf = make([]byte, 0)
+		}
+
+		partBuffer := bytes.NewBuffer(buf)
+		partBuffer.ReadFrom(io.LimitReader(part, int64(maxFileSize)))
+		part.Close()
+
+		partBytes := partBuffer.Bytes()
+
 		if parser.Options.Filter != nil {
 			// execute filter function
-			ok := parser.Options.Filter(part)
+			ok := parser.Options.Filter(partBytes)
 			if !ok {
+				if len(availableSlices) <= parser.Options.MaxAvailableSlice {
+					// appending []byte to availableSlices to reuse it
+					availableSlices = append(availableSlices, partBytes[:0])
+				}
 				continue
 			}
 		}
-		var b bytes.Buffer
-		n, err := io.CopyN(&b, part, int64(maxFileSize+1))
-		if err != nil && err != io.EOF {
-			return nil, err
-		}
-		if n > int64(maxFileSize) {
-			continue
-		}
-		p := NewPart(part.FileName(), &part.Header, b.Len(), b.Bytes())
+		p := NewPart(part.FileName(), &part.Header, len(partBytes), partBytes)
 		request.parts = append(request.parts, &p)
+
 		if len := len(request.parts); len == parser.Options.MaxFileCount && len != 0 {
-			break
+			return nil, errMaxFileCountExceeded
 		}
 	}
 	return request, nil
