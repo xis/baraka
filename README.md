@@ -14,7 +14,7 @@ makes it easier to make operations with files from the http request.
 
 # **install**
 ```bash
-go get github.com/xis/baraka
+go get github.com/xis/baraka/v2
 ```
 
 # **usage**
@@ -101,8 +101,6 @@ if err != nil {
 # more 
 *v1.1.1*
 [*Handling file uploads simple and memory friendly in Go with Baraka*](https://dev.to/xis/handling-file-uploads-simple-and-memory-friendly-in-go-with-baraka-2h3)
-
-i will make a blog post for v1.2.0
 
 # contributing
  pull requests are welcome. please open an issue first to discuss what you would like to change.
