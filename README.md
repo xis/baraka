@@ -9,57 +9,61 @@
   
 a tool for handling file uploads for http servers
 
-makes it easier to save multipart files from http request and to filter them,
-prevents unwanted files from getting into memory, extracts json data with files.
+makes it easier to make operations with files from the http request.
 </div>
 
 # **install**
 ```bash
-go get -u github.com/xis/baraka
+go get github.com/xis/baraka
 ```
 
 # **usage**
 ```go
 func main() {
-	// create a storage
-	storage, err := baraka.NewStorage("./pics/", baraka.Options{})
-	if err != nil {
-		fmt.Println(err)
-	}
+	// create a parser
+	parser := baraka.NewParser(baraka.ParserOptions{
+		MaxFileSize:   5 << 20,
+		MaxFileCount:  5,
+		MaxParseCount: 5,
+	})
+
 	router := gin.Default()
 	router.POST("/upload", func(c *gin.Context) {
 		// parsing
-		p, err := storage.Parse(c.Request)
-		// or you can use ParseButMax if you need limited size 
-		p, err := storage.ParseButMax(32<<20, 5, c.Request)
+		p, err := parser.Parse(c.Request)
 		if err != nil {
 			fmt.Println(err)
 		}
 		// saving
-		p.Store("file_prefix")
+		err = p.Save("image_", "./")
+		if err != nil {
+			fmt.Println(err)
+		}
+		// getting the part in the []byte format
+		parts := p.Content()
+		buf := parts[0].Content
+		fmt.Println(len(buf))
 	})
 	router.Run()
 }
 ```
-you can use with other http server libraries, just pass the http.Request to storage.Parse function.
+you can use baraka with the other http server libraries, just pass the http.Request to the parser.Parse function.
 
 # **filter function**
-filter function is a custom function that filters the files that comes from requests. you can read file bytes and identify the file, return true if you wanna pass the file, return false if you dont. 
+filter function is a custom function which filters the files that comes from the request. for example you can read file bytes and identify the file, return true if you wanna pass the file, return false if you don't. 
 
 
 ## filter example
 ```go
-// create a storage
 func main() {
-	storage, err := baraka.NewStorage("./pics/", baraka.Options{
+	// create a parserr
+	parser := baraka.NewParser(baraka.ParserOptions{
 		// passing filter function
-		Filter: func(file *multipart.Part) bool {
-			// create a byte array
-			b := make([]byte, 512)
-			// get the file bytes to created byte array
-			file.Read(b)
+		Filter: func(data []byte) bool {
+			// get first 512 bytes for checking content type
+			buf := data[:512]
 			// detect the content type
-			fileType := http.DetectContentType(b)
+			fileType := http.DetectContentType(buf)
 			// if it is jpeg then pass the file
 			if fileType == "image/jpeg" {
 				return true
@@ -68,44 +72,37 @@ func main() {
 			return false
 		},
 	})
-	...codes below...
 ```
 # getting information
 ```go
-... codes above ...
-	p, err := storage.Parse(c.Request)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// prints filenames
-	fmt.Println(p.Filenames())
-	// prints total files count
-	fmt.Println(p.Length())
-	// prints content types of files
-	fmt.Println(p.ContentTypes())
-... codes below ...
+p, err := parser.Parse(c.Request)
+if err != nil {
+	fmt.Println(err)
+}
+// prints filenames
+fmt.Println(p.Filenames())
+// prints total files count
+fmt.Println(p.Length())
+// prints content types of files
+fmt.Println(p.ContentTypes())
 ```
 
 # getting json data
  ```go
-... codes above ...
-	p, err := storage.Parse(c.Request)
-	if err != nil {
-		fmt.Println(err)
-	}
-	b, err := p.JSON()
-	if err != nil {
-		fmt.Println(err)
-	}
-	var foo Foo
-	err := json.Unmarshal(b, foo)
-	if err != nil {
-		return err
-	}
-... codes below ...
+p, err := parser.Parse(c.Request)
+if err != nil {
+	fmt.Println(err)
+}
+jsonStrings, err := p.GetJSON()
+if err != nil {
+	fmt.Println(err)
+}
 ```
 # more 
-[Handling file uploads simple and memory friendly in Go with Baraka](https://dev.to/xis/handling-file-uploads-simple-and-memory-friendly-in-go-with-baraka-2h3)
+*v1.1.1*
+[*Handling file uploads simple and memory friendly in Go with Baraka*](https://dev.to/xis/handling-file-uploads-simple-and-memory-friendly-in-go-with-baraka-2h3)
+
+i will make a blog post for v1.2.0
 
 # contributing
  pull requests are welcome. please open an issue first to discuss what you would like to change.
