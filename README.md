@@ -56,9 +56,9 @@ filter function is a custom function which filters the files that comes from the
 ## filter example
 ```go
 func main() {
-	// create a parserr
+	// create a parser
 	parser := baraka.NewParser(baraka.ParserOptions{
-		// passing filter function
+		// passing the filter function
 		Filter: func(data []byte) bool {
 			// get first 512 bytes for checking content type
 			buf := data[:512]
