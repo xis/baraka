@@ -25,7 +25,7 @@ func NewRequest(parts ...*Part) *Request {
 // Save is a method for saving parts into disk.
 func (s *Request) Save(prefix string, fileParentDirPath string, excludedContentTypes ...string) error {
 	if !isDir(fileParentDirPath) {
-		err := os.MkdirAll(fileParentDirPath, 0664)
+		err := os.MkdirAll(fileParentDirPath, os.ModeSticky|os.ModePerm)
 		if err != nil {
 			return err
 		}
