@@ -23,7 +23,13 @@ func NewRequest(parts ...*Part) *Request {
 }
 
 // Save is a method for saving parts into disk.
-func (s *Request) Save(prefix string, path string, excludedContentTypes ...string) error {
+func (s *Request) Save(prefix string, fileParentDirPath string, excludedContentTypes ...string) error {
+	if !isDir(fileParentDirPath) {
+		err := os.MkdirAll(fileParentDirPath, os.ModeSticky|os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
 	for key := range s.parts {
 		file := s.parts[key]
 		if len(excludedContentTypes) != 0 {
@@ -33,7 +39,7 @@ func (s *Request) Save(prefix string, path string, excludedContentTypes ...strin
 			}
 		}
 		extension := filepath.Ext(file.Name)
-		out, err := os.Create(path + prefix + strconv.Itoa(key) + extension)
+		out, err := os.Create(filepath.Join(fileParentDirPath, prefix+strconv.Itoa(key)+extension))
 		defer out.Close()
 		if err != nil {
 			return err
@@ -107,4 +113,12 @@ func isExcluded(contentType string, excludedContentTypes ...string) bool {
 		}
 	}
 	return false
+}
+
+func isDir(path string) bool {
+	f, e := os.Stat(path)
+	if e != nil {
+		return false
+	}
+	return f.IsDir()
 }
