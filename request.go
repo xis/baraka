@@ -23,9 +23,9 @@ func NewRequest(parts ...*Part) *Request {
 }
 
 // Save is a method for saving parts into disk.
-func (s *Request) Save(prefix string, fileParentDirPath string, excludedContentTypes ...string) error {
-	if !isDir(fileParentDirPath) {
-		err := os.MkdirAll(fileParentDirPath, os.ModeSticky|os.ModePerm)
+func (s *Request) Save(prefix string, folderPath string, excludedContentTypes ...string) error {
+	if !isDir(folderPath) {
+		err := os.MkdirAll(folderPath, os.ModeSticky|os.ModePerm)
 		if err != nil {
 			return err
 		}
@@ -39,7 +39,7 @@ func (s *Request) Save(prefix string, fileParentDirPath string, excludedContentT
 			}
 		}
 		extension := filepath.Ext(file.Name)
-		out, err := os.Create(filepath.Join(fileParentDirPath, prefix+strconv.Itoa(key)+extension))
+		out, err := os.Create(filepath.Join(folderPath, prefix+strconv.Itoa(key)+extension))
 		defer out.Close()
 		if err != nil {
 			return err
