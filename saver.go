@@ -30,7 +30,10 @@ func (s FileSystemStore) Save(path string, filename string, part *Part) error {
 			return err
 		}
 	}
-	extension := filepath.Ext(part.Name)
+	extension := part.Extension
+	if part.Extension == "" {
+		extension = filepath.Ext(part.Name)
+	}
 	out, err := os.Create(filepath.Join(path, filename+extension))
 	defer out.Close()
 	if err != nil {
