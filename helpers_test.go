@@ -5,6 +5,7 @@ package baraka
 
 import (
 	"net/http"
+	"net/textproto"
 	"strings"
 )
 
@@ -22,34 +23,18 @@ test file b
 --MyBoundary--
 `
 
-const RawMultipartWithJSON = `
---MyBoundary
-Content-Disposition: form-data; name="filea"; filename="filea.txt"
-Content-Type: text/plain
-
-test file
---MyBoundary
-Content-Disposition: form-data; name="jsonfile"; filename="jsonfile.json"
-Content-Type: @contentType
-
-@data
---MyBoundary--
-`
+var PartPlainText = Part{
+	Name: "Plain",
+	Headers: textproto.MIMEHeader{
+		"Content-Type": []string{"text/plain"},
+	},
+	Size:    15,
+	Content: []byte("plain text file"),
+}
 
 func CreateHTTPRequest(raw string) *http.Request {
 	b := strings.NewReader(strings.ReplaceAll(raw, "\n", "\r\n"))
-	req, _ := http.NewRequest("POST", "http://localhost", b)
+	req, _ := http.NewRequest("POST", "http://test.com", b)
 	req.Header = http.Header{"Content-Type": {`multipart/form-data; boundary="MyBoundary"`}}
 	return req
-}
-
-func FilterJPEG() func([]byte) bool {
-	return func(data []byte) bool {
-		buf := data[:512]
-		media := http.DetectContentType(buf)
-		if media == "image/jpeg" {
-			return true
-		}
-		return false
-	}
 }

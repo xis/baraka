@@ -2,9 +2,11 @@ package baraka
 
 import (
 	"bytes"
-	"errors"
 	"io"
+	"mime"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 const defaultMaxFileSize = 10 << 20
@@ -13,44 +15,51 @@ const defaultMaxFileCount = 0
 const defaultMaxAvailableSlice = 2
 
 var errMaxFileCountExceeded = errors.New("max file count to save exceeded")
+var errExtensionNotFound = errors.New("can't detect file's extension")
 
-// Parser is an interface which determine which method to use when parsing multipart files
-type Parser interface {
-	Parse(r *http.Request) (Processor, error)
-}
-
-// parser implements the Parser interface
-type parser struct {
-	Options ParserOptions
+// Parser contains parsing options and interfaces to do some other actions
+type Parser struct {
+	Options   ParserOptions
+	Filter    Filter
+	Inspector Inspector
 }
 
 // ParserOptions contains parser's options about parsing.
-// filter function runs when parsing the file
 type ParserOptions struct {
 	MaxFileSize       int
 	MaxFileCount      int
 	MaxParseCount     int
 	MaxAvailableSlice int
-	Filter            func(b []byte) bool
 }
 
-// NewParser creates a new Parser, if you give an empty ParserOptions it uses defaults.
-func NewParser(options ParserOptions) Parser {
-	if options.MaxFileSize == 0 {
-		options.MaxFileSize = defaultMaxFileSize
+// NewParser creates a new Parser.
+func NewParser(options ParserOptions) *Parser {
+	return &Parser{
+		Options: options,
 	}
-	if options.MaxParseCount == 0 {
-		options.MaxParseCount = defaultMaxParseCount
+}
+
+// DefaultParser creates a new parser with the default settings
+func DefaultParser() *Parser {
+	options := ParserOptions{
+		MaxFileSize:       defaultMaxFileSize,
+		MaxFileCount:      defaultMaxFileCount,
+		MaxParseCount:     defaultMaxParseCount,
+		MaxAvailableSlice: defaultMaxAvailableSlice,
 	}
-	if options.MaxFileCount == 0 {
-		options.MaxFileCount = defaultMaxFileCount
-	}
-	if options.MaxAvailableSlice == 0 {
-		options.MaxAvailableSlice = defaultMaxAvailableSlice
-	}
-	return parser{
-		options,
-	}
+	return NewParser(options)
+}
+
+// SetFilter sets the filter of the parser
+func (parser *Parser) SetFilter(filter Filter) *Parser {
+	parser.Filter = filter
+	return parser
+}
+
+// SetInspector sets the inspector of the parser
+func (parser *Parser) SetInspector(inspector Inspector) *Parser {
+	parser.Inspector = inspector
+	return parser
 }
 
 // Parse parses the http request with the multipart.Reader.
@@ -60,18 +69,16 @@ func NewParser(options ParserOptions) Parser {
 // it gets a buf from availableSlices and use it.
 // availableSlices fed by filter function,
 // if part can't pass through the filter function, reserved buf for the part gets into availableSlices.
-func (parser parser) Parse(r *http.Request) (Processor, error) {
+func (parser *Parser) Parse(r *http.Request) (*Request, error) {
 	reader, err := r.MultipartReader()
 	if err != nil {
 		return nil, err
 	}
 
-	maxFileSize := parser.Options.MaxFileSize
-
-	parts := make([]*Part, 0, parser.Options.MaxFileCount)
-	request := NewRequest(parts...)
-
+	parts := make(map[string][]*Part)
+	request := NewRequest(parts)
 	availableSlices := make([][]byte, 0, parser.Options.MaxAvailableSlice)
+
 	for parseCount := 0; parseCount < parser.Options.MaxParseCount; parseCount++ {
 		part, err := reader.NextPart()
 		if err != nil {
@@ -80,7 +87,6 @@ func (parser parser) Parse(r *http.Request) (Processor, error) {
 			}
 			return nil, err
 		}
-
 		var buf []byte
 		if len(availableSlices) > 0 {
 			buf, availableSlices = availableSlices[len(availableSlices)-1], availableSlices[:len(availableSlices)-1]
@@ -89,14 +95,33 @@ func (parser parser) Parse(r *http.Request) (Processor, error) {
 		}
 
 		partBuffer := bytes.NewBuffer(buf)
-		partBuffer.ReadFrom(io.LimitReader(part, int64(maxFileSize)))
+		partBuffer.ReadFrom(io.LimitReader(part, int64(parser.Options.MaxFileSize)))
 		part.Close()
 
 		partBytes := partBuffer.Bytes()
 
-		if parser.Options.Filter != nil {
+		p := Part{
+			Name:    part.FileName(),
+			Headers: part.Header,
+			Size:    len(partBytes),
+			Content: partBytes,
+		}
+
+		if parser.Inspector != nil {
+			contentType := parser.Inspector.Inspect(partBytes)
+			extensions, err := mime.ExtensionsByType(contentType)
+			if err != nil {
+				return nil, err
+			}
+			if extensions == nil || len(extensions) == 0 {
+				return nil, errors.Wrapf(errExtensionNotFound, "filename: %s", part.FileName())
+			}
+			p.Extension = extensions[0]
+		}
+
+		if parser.Filter != nil {
 			// execute filter function
-			ok := parser.Options.Filter(partBytes)
+			ok := parser.Filter.Filter(&p)
 			if !ok {
 				if len(availableSlices) <= parser.Options.MaxAvailableSlice {
 					// appending []byte to availableSlices to reuse it
@@ -105,9 +130,7 @@ func (parser parser) Parse(r *http.Request) (Processor, error) {
 				continue
 			}
 		}
-		p := NewPart(part.FileName(), &part.Header, len(partBytes), partBytes)
-		request.parts = append(request.parts, &p)
-
+		request.parts[part.FormName()] = append(request.parts[part.FormName()], &p)
 		if len := len(request.parts); len == parser.Options.MaxFileCount && len != 0 {
 			return nil, errMaxFileCountExceeded
 		}
