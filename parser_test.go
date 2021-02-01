@@ -2,10 +2,12 @@ package baraka
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type ParserTest struct {
-	parser         Parser
+	parser         *Parser
 	expectedLength int
 }
 
@@ -13,20 +15,22 @@ func TestParserParse(t *testing.T) {
 	raw := RawMultipartPlainText
 
 	tests := []ParserTest{
-		{NewParser(ParserOptions{}), 2},
-		{NewParser(ParserOptions{
-			Filter: FilterJPEG(),
-		}), 0},
+		{
+			DefaultParser(),
+			2,
+		},
+		{
+			DefaultParser().SetFilter(NewExtensionFilter(".jpg", ".png")).SetInspector(NewDefaultInspector(512)),
+			0,
+		},
 	}
 
 	for _, test := range tests {
 		req := CreateHTTPRequest(raw)
-		processor, err := test.parser.Parse(req)
+		request, err := test.parser.Parse(req)
 		if err != nil {
 			t.Error(err)
 		}
-		if len(processor.Content()) != test.expectedLength {
-			t.Error("content item length is not equal to expected length")
-		}
+		assert.Equal(t, test.expectedLength, len(request.parts), "parts length is not equal to expected parts length")
 	}
 }
