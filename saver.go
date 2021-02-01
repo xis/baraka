@@ -48,7 +48,7 @@ func (s FileSystemStore) Save(path string, filename string, part *Part) error {
 
 // helper functions
 
-// isDir checks if file exists or not
+// isDir checks if the path is a directory and exists
 func isDir(path string) bool {
 	f, e := os.Stat(path)
 	if e != nil {
