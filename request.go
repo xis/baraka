@@ -2,14 +2,12 @@ package baraka
 
 import "errors"
 
-// Request implements the Processor interface.
-// contains an array of parts.
-// parser.Parse() returns Request as Processor.
+// Request contains parts to use in other transactions.
 type Request struct {
 	parts map[string][]*Part
 }
 
-// NewRequest creates a new Request with parts inside
+// NewRequest creates a new Request
 func NewRequest(parts map[string][]*Part) *Request {
 	return &Request{
 		parts,
