@@ -12,12 +12,19 @@ a tool for handling file uploads for http servers
 makes it easier to make operations with files from the http request.
 </div>
 
-# **install**
+## Contents
+ - [Install](#Install)
+ - [Simple Usage](#Simple-Usage)
+ - [Filtering Parts](#Filtering-Parts)
+ - [Contribute](#Contribute)
+ - [License](#License)
+
+## Install
 ```bash
 go get github.com/xis/baraka/v2
 ```
 
-# **usage**
+## Simple Usage
 ```go
 func main() {
 	// create a parser
@@ -27,85 +34,58 @@ func main() {
 		MaxParseCount: 5,
 	})
 
+	store := baraka.NewFileSystemStore("./files")
+
 	router := gin.Default()
 	router.POST("/upload", func(c *gin.Context) {
 		// parsing
-		p, err := parser.Parse(c.Request)
+		request, err := parser.Parse(c.Request)
 		if err != nil {
 			fmt.Println(err)
 		}
+
+		// get the form
+		images, err := request.GetForm("images")
+		if err != nil {
+			fmt.Println(err)
+		}
+
 		// saving
-		err = p.Save("image_", "./")
-		if err != nil {
-			fmt.Println(err)
+		for key, image := range images {
+			err = store.Save("images", "image_"+strconv.Itoa(key), image)
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
-		// getting the part in the []byte format
-		parts := p.Content()
-		buf := parts[0].Content
-		fmt.Println(len(buf))
 	})
 	router.Run()
 }
 ```
 you can use baraka with the other http server libraries, just pass the http.Request to the parser.Parse function.
 
-# **filter function**
-filter function is a custom function which filters the files that comes from the request. for example you can read file bytes and identify the file, return true if you wanna pass the file, return false if you don't. 
+## Filtering Parts
+You can filter parts by their properties, like part's content type. Parser can inspect the part's bytes and detect the type of the part with the Inspector.
 
-
-## filter example
 ```go
-func main() {
-	// create a parser
-	parser := baraka.NewParser(baraka.ParserOptions{
-		// passing the filter function
-		Filter: func(data []byte) bool {
-			// get first 512 bytes for checking content type
-			buf := data[:512]
-			// detect the content type
-			fileType := http.DetectContentType(buf)
-			// if it is jpeg then pass the file
-			if fileType == "image/jpeg" {
-				return true
-			}
-			// if not then don't pass
-			return false
-		},
-	})
-```
-# getting information
-```go
-p, err := parser.Parse(c.Request)
-if err != nil {
-	fmt.Println(err)
-}
-// prints filenames
-fmt.Println(p.Filenames())
-// prints total files count
-fmt.Println(p.Length())
-// prints content types of files
-fmt.Println(p.ContentTypes())
+// create a parser
+parser := baraka.NewParser(baraka.ParserOptions{
+	MaxFileSize:   5 << 20,
+	MaxFileCount:  5,
+	MaxParseCount: 5,
+})
+
+// give parser an inspector
+parser.SetInspector(baraka.NewDefaultInspector(512))
+// give parser a filter
+parser.SetFilter(baraka.NewExtensionFilter(".jpg"))
 ```
 
-# getting json data
- ```go
-p, err := parser.Parse(c.Request)
-if err != nil {
-	fmt.Println(err)
-}
-jsonStrings, err := p.GetJSON()
-if err != nil {
-	fmt.Println(err)
-}
-```
-# more 
-*v1.1.1*
-[*Handling file uploads simple and memory friendly in Go with Baraka*](https://dev.to/xis/handling-file-uploads-simple-and-memory-friendly-in-go-with-baraka-2h3)
+Now parser will inspect the each part and it will just return the jpeg ones from the Parse function. You can make your own Inspector and Filter.
 
-# contributing
+## Contribute
  pull requests are welcome. please open an issue first to discuss what you would like to change.
 
  please make sure to update tests as appropriate.
 
-# license
+## License
 [MIT](https://choosealicense.com/licenses/mit/)
