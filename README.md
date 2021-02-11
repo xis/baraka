@@ -5,7 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/xis/baraka)](https://goreportcard.com/report/github.com/xis/baraka)
 [![codecov](https://codecov.io/gh/xis/baraka/branch/master/graph/badge.svg)](https://codecov.io/gh/xis/baraka)
 [![Build Status](https://travis-ci.org/xis/baraka.svg?branch=master)](https://travis-ci.org/xis/baraka) 
-[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/xis/baraka)
+[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/xis/baraka/v2)
   
 a tool for handling file uploads for http servers
 
@@ -38,7 +38,7 @@ func main() {
 
 	router := gin.Default()
 	router.POST("/upload", func(c *gin.Context) {
-		// parsing
+		// parse
 		request, err := parser.Parse(c.Request)
 		if err != nil {
 			fmt.Println(err)
@@ -50,7 +50,7 @@ func main() {
 			fmt.Println(err)
 		}
 
-		// saving
+		// save
 		for key, image := range images {
 			err = store.Save("images", "image_"+strconv.Itoa(key), image)
 			if err != nil {
@@ -61,7 +61,7 @@ func main() {
 	router.Run()
 }
 ```
-you can use baraka with the other http server libraries, just pass the http.Request to the parser.Parse function.
+You can use baraka with the other http server libraries, just pass the http.Request to the parser.Parse function.
 
 ## Filtering Parts
 You can filter parts by their properties, like part's content type. Parser can inspect the part's bytes and detect the type of the part with the Inspector.
@@ -83,9 +83,9 @@ parser.SetFilter(baraka.NewExtensionFilter(".jpg"))
 Now parser will inspect the each part and it will just return the jpeg ones from the Parse function. You can make your own Inspector and Filter.
 
 ## Contribute
- pull requests are welcome. please open an issue first to discuss what you would like to change.
+Pull requests are welcome. please open an issue first to discuss what you would like to change.
 
- please make sure to update tests as appropriate.
+Please make sure to update tests as appropriate.
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
