@@ -82,6 +82,9 @@ parser.SetFilter(baraka.NewExtensionFilter(".jpg"))
 
 Now parser will inspect the each part and it will just return the jpeg ones from the Parse function. You can make your own Inspector and Filter.
 
+## More
+[Handling multipart file uploads simple in Go with Baraka](https://dev.to/xis/handling-multipart-file-uploads-simple-in-go-with-baraka-528i)
+
 ## Contribute
 Pull requests are welcome. please open an issue first to discuss what you would like to change.
 
