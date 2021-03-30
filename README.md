@@ -16,6 +16,7 @@ makes it easier to make operations with files from the http request.
  - [Install](#Install)
  - [Simple Usage](#Simple-Usage)
  - [Filtering Parts](#Filtering-Parts)
+ - [More](#More)
  - [Contribute](#Contribute)
  - [License](#License)
 
