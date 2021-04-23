@@ -113,7 +113,7 @@ func (parser *Parser) Parse(r *http.Request) (*Request, error) {
 			if err != nil {
 				return nil, err
 			}
-			if extensions == nil || len(extensions) == 0 {
+			if len(extensions) == 0 {
 				return nil, errors.Wrapf(errExtensionNotFound, "filename: %s", part.FileName())
 			}
 			p.Extension = extensions[0]
