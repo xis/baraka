@@ -35,11 +35,14 @@ func (s FileSystemStore) Save(path string, filename string, part *Part) error {
 		extension = filepath.Ext(part.Name)
 	}
 	out, err := os.Create(filepath.Join(path, filename+extension))
-	defer out.Close()
 	if err != nil {
 		return err
 	}
 	_, err = out.Write(part.Content)
+	if err != nil {
+		return err
+	}
+	err = out.Close()
 	if err != nil {
 		return err
 	}
