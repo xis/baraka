@@ -1,6 +1,17 @@
 
 <div align="center">
-  <h1>baraka</h1>
+	<pre>                         
+ ▄▄▄▄    ▄▄▄       ██▀███   ▄▄▄       ██ ▄█▀▄▄▄      
+▓█████▄ ▒████▄    ▓██ ▒ ██▒▒████▄     ██▄█▒▒████▄    
+▒██▒ ▄██▒██  ▀█▄  ▓██ ░▄█ ▒▒██  ▀█▄  ▓███▄░▒██  ▀█▄  
+▒██░█▀  ░██▄▄▄▄██ ▒██▀▀█▄  ░██▄▄▄▄██ ▓██ █▄░██▄▄▄▄██ 
+░▓█  ▀█▓ ▓█   ▓██▒░██▓ ▒██▒ ▓█   ▓██▒▒██▒ █▄▓█   ▓██▒
+░▒▓███▀▒ ▒▒   ▓▒█░░ ▒▓ ░▒▓░ ▒▒   ▓▒█░▒ ▒▒ ▓▒▒▒   ▓▒█░
+▒░▒   ░   ▒   ▒▒ ░  ░▒ ░ ▒░  ▒   ▒▒ ░░ ░▒ ▒░ ▒   ▒▒ ░
+ ░    ░   ░   ▒     ░░   ░   ░   ▒   ░ ░░ ░  ░   ▒   
+ ░            ░  ░   ░           ░  ░░  ░        ░  ░
+      ░                                              
+	</pre>
   
 [![Go Report Card](https://goreportcard.com/badge/github.com/xis/baraka)](https://goreportcard.com/report/github.com/xis/baraka)
 [![codecov](https://codecov.io/gh/xis/baraka/branch/master/graph/badge.svg)](https://codecov.io/gh/xis/baraka)
