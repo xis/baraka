@@ -71,6 +71,7 @@ func (parser *Parser) Parse(r *http.Request) (*Request, error) {
 	parts := make(map[string][]*Part)
 	request := NewRequest(parts)
 
+process:
 	for parseCount := 0; parseCount < parser.Options.MaxParseCount; parseCount++ {
 		part, err := reader.NextPart()
 		if err != nil {
@@ -80,22 +81,36 @@ func (parser *Parser) Parse(r *http.Request) (*Request, error) {
 			return nil, err
 		}
 
-		var buf []byte
-		partBuffer := bytes.NewBuffer(buf)
-		partBuffer.ReadFrom(io.LimitReader(part, int64(parser.Options.MaxFileSize)))
-		part.Close()
+		data := bytes.NewBuffer(nil)
+		for {
+			if data.Len() > parser.Options.MaxFileSize {
+				continue process
+			}
 
-		partBytes := partBuffer.Bytes()
+			buf := make([]byte, 1024)
+			_, err := part.Read(buf)
+			if err != nil {
+				if err == io.EOF {
+					data.Write(buf)
+					break
+				}
+
+				return nil, err
+			}
+
+			data.Write(buf)
+		}
+		part.Close()
 
 		p := Part{
 			Name:    part.FileName(),
 			Headers: part.Header,
-			Size:    len(partBytes),
-			Content: partBytes,
+			Size:    data.Len(),
+			Content: data.Bytes(),
 		}
 
 		if parser.Inspector != nil {
-			contentType := parser.Inspector.Inspect(partBytes)
+			contentType := parser.Inspector.Inspect(data.Bytes())
 			extensions, err := mime.ExtensionsByType(contentType)
 			if err != nil {
 				return nil, err
@@ -107,7 +122,6 @@ func (parser *Parser) Parse(r *http.Request) (*Request, error) {
 		}
 
 		if parser.Filter != nil {
-			// execute filter function
 			ok := parser.Filter.Filter(&p)
 			if !ok {
 				continue
