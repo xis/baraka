@@ -88,9 +88,10 @@ process:
 			}
 
 			buf := make([]byte, 1024)
-			_, err := part.Read(buf)
+			n, err := part.Read(buf)
 			if err != nil {
 				if err == io.EOF {
+					buf = buf[:n]
 					data.Write(buf)
 					break
 				}
