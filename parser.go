@@ -13,8 +13,8 @@ const defaultMaxFileSize = 10 << 20
 const defaultMaxParseCount = 20
 const defaultMaxFileCount = 0
 
-var errMaxFileCountExceeded = errors.New("max file count to save exceeded")
-var errExtensionNotFound = errors.New("can't detect file's extension")
+var ErrMaxFileCountExceeded = errors.New("max file count to save exceeded")
+var ErrExtensionNotFound = errors.New("can't detect file's extension")
 
 // Parser contains parsing options and interfaces to do some other actions
 type Parser struct {
@@ -117,14 +117,14 @@ process:
 
 		if parser.Inspector != nil {
 			contentType := parser.Inspector.Inspect(data.Bytes())
-			
+
 			extensions, err := mime.ExtensionsByType(contentType)
 			if err != nil {
 				return nil, err
 			}
 
 			if len(extensions) == 0 {
-				return nil, errors.Wrapf(errExtensionNotFound, "filename: %s", part.FileName())
+				return nil, errors.Wrapf(ErrExtensionNotFound, "filename: %s", part.FileName())
 			}
 
 			p.Extension = extensions[0]
@@ -139,7 +139,7 @@ process:
 
 		request.parts[part.FormName()] = append(request.parts[part.FormName()], &p)
 		if len := len(request.parts); len == parser.Options.MaxFileCount && len != 0 {
-			return nil, errMaxFileCountExceeded
+			return nil, ErrMaxFileCountExceeded
 		}
 	}
 
