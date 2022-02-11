@@ -46,7 +46,7 @@ func main() {
 		MaxParseCount: 5,
 	})
 
-	store := baraka.NewFileSystemStore("./files")
+	store := baraka.NewFilesystemStorage("./files")
 
 	router := gin.Default()
 	router.POST("/upload", func(c *gin.Context) {

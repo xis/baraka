@@ -24,7 +24,7 @@ func TestSaverSave(t *testing.T) {
 			expectedSizeOfFile:      15,
 		},
 	}
-	store := NewFileSystemStore("./")
+	store := NewFilesystemStorage("./")
 	for _, test := range tests {
 		err := store.Save("test", test.part.Name, &test.part)
 		if err != nil {

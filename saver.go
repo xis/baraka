@@ -10,20 +10,20 @@ type Saver interface {
 	Save(path string, filename string, part *Part) error
 }
 
-// FileSystemStore is the default store to save parts
-type FileSystemStore struct {
+// FilesystemStorage is the default store to save parts
+type FilesystemStorage struct {
 	Path string
 }
 
-// NewFileSystemStore creates a new FileSystemStore
-func NewFileSystemStore(path string) FileSystemStore {
-	return FileSystemStore{
+// NewFilesystemStorage creates a new FilesystemStorage
+func NewFilesystemStorage(path string) FilesystemStorage {
+	return FilesystemStorage{
 		Path: path,
 	}
 }
 
 // Save is a method for saving parts into disk.
-func (s FileSystemStore) Save(path string, filename string, part *Part) error {
+func (s FilesystemStorage) Save(path string, filename string, part *Part) error {
 	if !isDir(path) {
 		err := os.MkdirAll(path, os.ModeSticky|os.ModePerm)
 		if err != nil {
