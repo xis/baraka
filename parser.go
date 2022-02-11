@@ -44,18 +44,21 @@ func DefaultParser() *Parser {
 		MaxFileCount:  defaultMaxFileCount,
 		MaxParseCount: defaultMaxParseCount,
 	}
+
 	return NewParser(options)
 }
 
 // SetFilter sets the filter of the parser
 func (parser *Parser) SetFilter(filter Filter) *Parser {
 	parser.Filter = filter
+
 	return parser
 }
 
 // SetInspector sets the inspector of the parser
 func (parser *Parser) SetInspector(inspector Inspector) *Parser {
 	parser.Inspector = inspector
+
 	return parser
 }
 
@@ -78,6 +81,7 @@ process:
 			if err == io.EOF {
 				break
 			}
+
 			return nil, err
 		}
 
@@ -93,6 +97,7 @@ process:
 				if err == io.EOF {
 					buf = buf[:n]
 					data.Write(buf)
+
 					break
 				}
 
@@ -112,13 +117,16 @@ process:
 
 		if parser.Inspector != nil {
 			contentType := parser.Inspector.Inspect(data.Bytes())
+			
 			extensions, err := mime.ExtensionsByType(contentType)
 			if err != nil {
 				return nil, err
 			}
+
 			if len(extensions) == 0 {
 				return nil, errors.Wrapf(errExtensionNotFound, "filename: %s", part.FileName())
 			}
+
 			p.Extension = extensions[0]
 		}
 
@@ -134,5 +142,6 @@ process:
 			return nil, errMaxFileCountExceeded
 		}
 	}
+
 	return request, nil
 }
