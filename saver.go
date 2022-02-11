@@ -30,22 +30,27 @@ func (s FileSystemStore) Save(path string, filename string, part *Part) error {
 			return err
 		}
 	}
+
 	extension := part.Extension
 	if part.Extension == "" {
 		extension = filepath.Ext(part.Name)
 	}
+
 	out, err := os.Create(filepath.Join(path, filename+extension))
 	if err != nil {
 		return err
 	}
+
 	_, err = out.Write(part.Content)
 	if err != nil {
 		return err
 	}
+
 	err = out.Close()
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -54,8 +59,10 @@ func (s FileSystemStore) Save(path string, filename string, part *Part) error {
 // isDir checks if the path is a directory and exists
 func isDir(path string) bool {
 	f, e := os.Stat(path)
+
 	if e != nil {
 		return false
 	}
+
 	return f.IsDir()
 }

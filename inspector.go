@@ -23,10 +23,13 @@ func NewDefaultInspector(maxSampleSize int) Inspector {
 // Inspect finds the content type of the byte array
 func (inspector *DefaultInspector) Inspect(data []byte) string {
 	maxSampleSize := inspector.maxSampleSize
+
 	if len(data) < maxSampleSize {
 		maxSampleSize = len(data)
 	}
+
 	sample := data[:maxSampleSize]
 	contentType := http.DetectContentType(sample)
+
 	return contentType
 }

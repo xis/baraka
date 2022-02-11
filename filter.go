@@ -24,10 +24,12 @@ func (f *ExtensionFilter) Filter(part *Part) bool {
 	if part.Extension == "" {
 		return false
 	}
+
 	for _, validExtension := range f.extensions {
 		if part.Extension == validExtension {
 			return true
 		}
 	}
+
 	return false
 }
