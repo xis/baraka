@@ -2,11 +2,11 @@ package baraka
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"io"
 	"mime"
 	"net/http"
-
-	"github.com/pkg/errors"
 )
 
 const (
@@ -128,7 +128,7 @@ process:
 			}
 
 			if len(extensions) == 0 {
-				return nil, errors.Wrapf(ErrExtensionNotFound, "filename: %s", part.FileName())
+				return nil, fmt.Errorf("%w, filename: %s", ErrExtensionNotFound, part.FileName())
 			}
 
 			p.Extension = extensions[0]
