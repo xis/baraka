@@ -9,12 +9,16 @@ import (
 	"github.com/pkg/errors"
 )
 
-const defaultMaxFileSize = 10 << 20
-const defaultMaxParseCount = 20
-const defaultMaxFileCount = 0
+const (
+	defaultMaxFileSize   = 10 << 20
+	defaultMaxParseCount = 20
+	defaultMaxFileCount  = 0
+)
 
-var ErrMaxFileCountExceeded = errors.New("max file count to save exceeded")
-var ErrExtensionNotFound = errors.New("can't detect file's extension")
+var (
+	ErrMaxFileCountExceeded = errors.New("max file count to save exceeded")
+	ErrExtensionNotFound    = errors.New("can't detect file's extension")
+)
 
 // Parser contains parsing options and interfaces to do some other actions
 type Parser struct {
