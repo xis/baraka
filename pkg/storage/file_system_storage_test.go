@@ -31,6 +31,14 @@ func (suite *FilesystemStorageTestSuite) TestStoreButNested() {
 	suite.NoError(err)
 }
 
+func (suite *FilesystemStorageTestSuite) TestStoreButNestedAndAlreadyExists() {
+	err := os.MkdirAll("./testdata/space/star", os.ModeSticky|os.ModePerm)
+	suite.NoError(err)
+
+	err = suite.Storage.Store("/something/something/something.txt", []byte("something"))
+	suite.NoError(err)
+}
+
 func (suite *FilesystemStorageTestSuite) TearDownSuite() {
 	err := os.RemoveAll("./testdata")
 	suite.NoError(err)
